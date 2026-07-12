@@ -138,48 +138,49 @@ function RootComponent() {
 
 function SiteHeader() {
   const linkBase =
-    "relative px-1 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-primary";
+    "relative px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-foreground/80 transition-colors hover:text-primary";
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-3">
+      <div className="mx-auto flex h-14 sm:h-16 max-w-full sm:max-w-7xl items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <span className="text-gold">
-            <BrandMark className="w-10 h-10" />
+            <BrandMark className="w-8 h-8 sm:w-10 sm:h-10" />
           </span>
-          <span className="flex flex-col leading-tight flex-shrink-0">
-            <span className="text-base font-display font-semibold whitespace-nowrap">
+          <span className="hidden xs:flex flex-col leading-tight flex-shrink-0">
+            <span className="text-sm sm:text-base font-display font-semibold whitespace-nowrap">
               <span className="text-gold opacity-95">تالار</span>{" "}
               <span className="text-gradient-gold">باران</span>
             </span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Baran · Gonabad</span>
+            <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-muted-foreground">Baran · Gonabad</span>
           </span>
         </Link>
-        <nav className="hidden items-center gap-7 md:flex">
+        
+        <nav className="hidden md:flex items-center gap-4 lg:gap-7">
           <Link to="/" className={linkBase} activeProps={{ className: "text-primary" }} activeOptions={{ exact: true }}>خانه</Link>
           <Link to="/halls" className={linkBase} activeProps={{ className: "text-primary" }}>سالن‌ها</Link>
           <Link to="/menu" className={linkBase} activeProps={{ className: "text-primary" }}>منو</Link>
           <Link to="/booking" className={linkBase} activeProps={{ className: "text-primary" }}>رزرو</Link>
-          <Link to="/contact" className={linkBase} activeProps={{ className: "text-primary" }}>تماس با ما</Link>
+          <Link to="/contact" className={linkBase} activeProps={{ className: "text-primary" }}>تماس</Link>
         </nav>
+        
         <Link
           to="/booking"
-          className="hidden md:inline-flex items-center justify-center rounded-full gradient-gold px-5 py-2 text-sm font-semibold text-primary-foreground shadow-[0_8px_30px_-10px_oklch(0.76_0.13_85/0.6)] transition-transform hover:scale-[1.03]"
-          style={{ filter: "brightness(0.92)" }}
+          className="inline-flex items-center justify-center rounded-full gradient-gold px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-primary-foreground shadow-[0_8px_30px_-10px_oklch(0.76_0.13_85/0.6)] transition-transform hover:scale-105 active:scale-95"
         >
-          رزرو تاریخ
-        </Link>
-        <Link
-          to="/booking"
-          className="md:hidden inline-flex items-center justify-center rounded-full gradient-gold px-4 py-1.5 text-xs font-semibold text-primary-foreground"
-        >
-          رزرو
+          <span className="md:hidden">رزرو</span>
+          <span className="hidden md:inline">رزرو تاریخ</span>
         </Link>
       </div>
-      <nav className="md:hidden flex items-center justify-center gap-5 border-t border-border/40 py-2 text-sm">
+      
+      <nav className="md:hidden flex items-center justify-center gap-2 sm:gap-4 border-t border-border/40 py-2 sm:py-2.5 px-2 overflow-x-auto">
         <Link to="/" className={linkBase} activeProps={{ className: "text-primary" }} activeOptions={{ exact: true }}>خانه</Link>
+        <span className="text-border/40">|</span>
         <Link to="/halls" className={linkBase} activeProps={{ className: "text-primary" }}>سالن‌ها</Link>
+        <span className="text-border/40">|</span>
         <Link to="/menu" className={linkBase} activeProps={{ className: "text-primary" }}>منو</Link>
+        <span className="text-border/40">|</span>
         <Link to="/booking" className={linkBase} activeProps={{ className: "text-primary" }}>رزرو</Link>
+        <span className="text-border/40">|</span>
         <Link to="/contact" className={linkBase} activeProps={{ className: "text-primary" }}>تماس</Link>
       </nav>
     </header>
@@ -199,35 +200,38 @@ function SiteFooter() {
   const mobile = mainHall?.mobile || "۰۹۱۵۰۰۰۰۰۰۰";
 
   return (
-    <footer className="border-t border-border/60 bg-card/40 mt-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid gap-10 md:grid-cols-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <BrandMark className="w-24 h-24 text-gold" />
-            <span className="font-display text-xl font-semibold text-gradient-gold">تالار باران</span>
+    <footer className="border-t border-border/60 bg-card/40 mt-16 sm:mt-24">
+      <div className="mx-auto max-w-full sm:max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-10 sm:py-12 grid gap-6 sm:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-right">
+          <div className="flex items-center gap-3 justify-center sm:justify-start">
+            <BrandMark className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-gold flex-shrink-0" />
+            <span className="font-display text-lg sm:text-xl font-semibold text-gradient-gold">تالار باران</span>
           </div>
-          <p className="mt-4 text-sm leading-7 text-muted-foreground">
+          <p className="mt-3 sm:mt-4 text-xs sm:text-sm leading-6 sm:leading-7 text-muted-foreground max-w-xs">
             میزبان لحظه‌های ماندگار شما در گناباد. سالن‌های مجزای آقایان و خانم‌ها با کیفیت برتر پذیرایی.
           </p>
         </div>
-        <div>
-          <h4 className="text-sm font-semibold text-foreground mb-4">تماس</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>{address}</li>
-            <li>تلفن: <span className="text-foreground">{phone}</span></li>
-            <li>همراه: <span className="text-foreground">{mobile}</span></li>
+
+        <div className="text-center sm:text-right">
+          <h4 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">تماس</h4>
+          <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
+            <li className="break-words">{address}</li>
+            <li>تلفن: <span className="text-foreground block sm:inline">{phone}</span></li>
+            <li>همراه: <span className="text-foreground block sm:inline">{mobile}</span></li>
           </ul>
         </div>
-        <div>
-          <h4 className="text-sm font-semibold text-foreground mb-4">دسترسی سریع</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link to="/halls" className="text-muted-foreground hover:text-primary">سالن‌ها</Link></li>
-            <li><Link to="/booking" className="text-muted-foreground hover:text-primary">رزرو آنلاین</Link></li>
-            <li><Link to="/contact" className="text-muted-foreground hover:text-primary">تماس با ما</Link></li>
+
+        <div className="text-center sm:text-right">
+          <h4 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">دسترسی سریع</h4>
+          <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
+            <li><Link to="/halls" className="text-muted-foreground hover:text-primary transition">سالن‌ها</Link></li>
+            <li><Link to="/booking" className="text-muted-foreground hover:text-primary transition">رزرو آنلاین</Link></li>
+            <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition">تماس با ما</Link></li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-border/40 py-5 text-center text-xs text-muted-foreground">
+
+      <div className="border-t border-border/40 py-4 sm:py-5 text-center text-xs text-muted-foreground px-3">
         © {new Date().getFullYear()} تالار باران گناباد — تمامی حقوق محفوظ است.
         <div className="mt-2 text-xs text-muted-foreground">
           طراحی و توسعه توسط {' '}
