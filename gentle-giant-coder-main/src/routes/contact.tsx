@@ -56,19 +56,19 @@ function ContactPage() {
   ];
 
   return (
-    <div dir="rtl" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
+    <div dir="rtl" className="mx-auto max-w-full sm:max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
       <div className="text-center max-w-2xl mx-auto">
-        <span className="text-xs uppercase tracking-[0.3em] text-primary">تماس</span>
-        <h1 className="mt-3 font-display text-5xl sm:text-6xl font-bold">تماس <span className="text-gradient-gold">با ما</span></h1>
-        <p className="mt-5 text-muted-foreground leading-8">
+        <span className="text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-primary">تماس</span>
+        <h1 className="mt-3 font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">تماس <span className="text-gradient-gold">با ما</span></h1>
+        <p className="mt-4 sm:mt-5 text-sm sm:text-base text-muted-foreground leading-6 sm:leading-8">
           برای رزرو، بازدید حضوری از تالار یا هرگونه سؤال، در کنار شما هستیم.
         </p>
       </div>
 
-      <div className="mt-14 grid lg:grid-cols-2 gap-8">
-        <div className="rounded-3xl border border-border/60 bg-card p-8 sm:p-10">
-          <h2 className="font-display text-2xl font-semibold">اطلاعات تماس</h2>
-          <ul className="mt-8 space-y-6 text-sm">
+      <div className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        <div className="rounded-2xl sm:rounded-3xl border border-border/60 bg-card p-5 sm:p-6 lg:p-8">
+          <h2 className="font-display text-xl sm:text-2xl font-semibold">اطلاعات تماس</h2>
+          <ul className="mt-6 sm:mt-8 space-y-4 sm:space-y-6 text-sm">
             {rows.map((row) => (
               <ContactRow
                 key={row.label}
@@ -80,37 +80,37 @@ function ContactPage() {
             ))}
           </ul>
 
-          <div className="mt-10 rounded-2xl border border-primary/30 bg-primary/5 p-5">
+          <div className="mt-8 sm:mt-10 rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:p-5">
             <p className="text-sm text-foreground/85 leading-7">
               برای مشاهده حضوری سالن‌ها لطفاً قبل از مراجعه، تماس بگیرید تا هماهنگی لازم انجام شود.
             </p>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-border/60 bg-card">
+        <div className="overflow-hidden rounded-2xl sm:rounded-3xl border border-border/60 bg-card">
           {mapEmbedUrl ? (
             <>
               <iframe
                 title="Baran Hall location on map"
                 src={mapEmbedUrl}
-                className="w-full min-h-[420px] h-full grayscale-[40%] contrast-110"
+                className="h-64 w-full sm:h-80 lg:h-96 grayscale-[40%] contrast-110"
                 loading="lazy"
                 style={{ border: 0 }}
                 referrerPolicy="no-referrer-when-downgrade"
               />
-              <div className="border-t border-border/60 p-5">
+              <div className="border-t border-border/60 p-4 sm:p-5">
                 <a
                   href={directionsUrl ?? "#"}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="inline-flex items-center justify-center rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+                  className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full border border-primary/30 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
                 >
                   مسیر یابی در گوگل مپس
                 </a>
               </div>
             </>
           ) : (
-            <div className="min-h-[420px] flex items-center justify-center px-8 text-center text-sm text-muted-foreground">
+            <div className="flex min-h-[256px] items-center justify-center px-6 py-10 text-center text-sm text-muted-foreground sm:min-h-[320px] lg:min-h-[384px]">
               موقعیت نقشه به زودی اضافه می‌شود.
             </div>
           )}

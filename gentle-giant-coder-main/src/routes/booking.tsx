@@ -205,10 +205,43 @@ function OtpStep({ phone, onBack, onVerified }: { phone: string; onBack: () => v
 }
 
 /* ---------- STEP 3: Reservation Form ---------- */
+function jalaliToGregorian(jy: number, jm: number, jd: number) {
+  jy += 1595;
+  let days = -355668 + (365 * jy) + Math.floor(jy / 33) * 8 + Math.floor(((jy % 33) + 3) / 4) + jd + (jm < 7 ? (jm - 1) * 31 : ((jm - 7) * 30) + 186);
+  let gy = 400 * Math.floor(days / 146097);
+  days %= 146097;
+  if (days > 36524) {
+    gy += 100 * Math.floor(--days / 36524);
+    days %= 36524;
+    if (days >= 365) days++;
+  }
+  gy += 4 * Math.floor(days / 1461);
+  days %= 1461;
+  if (days > 365) {
+    gy += Math.floor((days - 1) / 365);
+    days = (days - 1) % 365;
+  }
+  let gd = days + 1;
+  let sal_a = [0, 31, ((gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  let gm;
+  for (gm = 0; gm < 13 && gd > sal_a[gm]; gm++) gd -= sal_a[gm];
+  return [gy, gm, gd];
+}
+
 function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | number) => void }) {
+  // گرفتن تاریخ امروز به فرمت YYYY-MM-DD
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  
+  // محاسبه داینامیک سال شمسی فعلی
+  const currentJalaliYear = new Date().getFullYear() - 621;
+
   const [name, setName] = useState("");
-  const [date, setDate] = useState("");
+  
+  // قرار دادن سال جاری به عنوان مقدار پیش‌فرض
+  const [jYear, setJYear] = useState(currentJalaliYear);
+  const [jMonth, setJMonth] = useState(5);
+  const [jDay, setJDay] = useState(1);
+
   const [shift, setShift] = useState<"noon" | "night">("night");
   const [guests, setGuests] = useState(100);
   const [notes, setNotes] = useState("");
@@ -218,19 +251,48 @@ function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | numb
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // availability check
+  // استیت‌های جدید برای هندل کردن کاربری که از قبل رزرو دارد
+  const [alreadyReserved, setAlreadyReserved] = useState(false);
+  const [reservationInfo, setReservationInfo] = useState<any>(null);
+
+  // تبدیل تاریخ شمسی به میلادی
+  const gregorianDate = useMemo(() => {
+    const [gy, gm, gd] = jalaliToGregorian(jYear, jMonth, jDay);
+    return `${gy}-${String(gm).padStart(2, '0')}-${String(gd).padStart(2, '0')}`;
+  }, [jYear, jMonth, jDay]);
+
+  // بررسی اینکه آیا تاریخ انتخاب شده گذشته است یا نه؟
+  const isPastDate = gregorianDate < today;
+
+  // بررسی وضعیت پر بودن رزرو با API و چک کردن رزرو قبلی کاربر
   useEffect(() => {
-    if (!date) { setAvailability(null); return; }
+    if (isPastDate) {
+      setAvailability(null);
+      return;
+    }
+    
     let cancelled = false;
     setChecking(true); setAvailability(null);
-    api.checkAvailability(date, shift)
-      .then((r) => { if (!cancelled) setAvailability(r.available); })
+    api.checkAvailability(gregorianDate, shift)
+      .then((r) => { 
+        if (!cancelled) {
+          // اگر کاربر رزرو فعال داشت
+          if (r.already_reserved) {
+            setAlreadyReserved(true);
+            setReservationInfo(r.reservation_info);
+          } else {
+            // اگر رزرو نداشت، فقط وضعیت ظرفیت سالن را چک کن
+            setAvailability(r.available);
+            setAlreadyReserved(false);
+          }
+        } 
+      })
       .catch(() => { if (!cancelled) setAvailability(null); })
       .finally(() => { if (!cancelled) setChecking(false); });
     return () => { cancelled = true; };
-  }, [date, shift]);
+  }, [gregorianDate, shift, isPastDate]);
 
-  const canSubmit = name.trim() && date && availability === true && !loading;
+  const canSubmit = name.trim() && gregorianDate && availability === true && !loading && !isPastDate;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -238,7 +300,7 @@ function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | numb
     setLoading(true); setError(null);
     try {
       const res = await api.createReservation({
-        date, shift, customer_name: name.trim(), phone_number: phone, guests, notes: notes.trim() || undefined,
+        date: gregorianDate, shift, customer_name: name.trim(), phone_number: phone, guests, notes: notes.trim() || undefined,
       });
       onDone(res.id);
     } catch (err) {
@@ -246,6 +308,60 @@ function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | numb
     } finally { setLoading(false); }
   }
 
+  const days = Array.from({ length: jMonth <= 6 ? 31 : 30 }, (_, i) => i + 1);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const years = Array.from({ length: 5 }, (_, i) => currentJalaliYear + i);
+
+  // ---------- نمایش کارت رزرو فعال (در صورت وجود) ----------
+  if (alreadyReserved && reservationInfo) {
+    return (
+      <div className="space-y-5 sm:space-y-7 animate-fade-up text-center">
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary/10 mb-4 shadow-inner">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+        </div>
+        <h2 className="font-display text-xl sm:text-2xl font-semibold">شما یک رزرو فعال دارید!</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground">امکان ثبت رزرو جدید تا تعیین تکلیف رزرو فعلی وجود ندارد.</p>
+
+        <div className="mt-6 text-right bg-card/60 border border-border p-5 rounded-2xl space-y-4 shadow-sm">
+          <div className="flex justify-between border-b border-border/50 pb-2">
+            <span className="text-muted-foreground text-xs sm:text-sm">نام رزرو کننده:</span>
+            <span className="font-semibold text-sm sm:text-base">{reservationInfo.customer_name}</span>
+          </div>
+          <div className="flex justify-between border-b border-border/50 pb-2">
+            <span className="text-muted-foreground text-xs sm:text-sm">تاریخ مراسم:</span>
+            <span className="font-semibold text-sm sm:text-base">
+                {new Date(reservationInfo.date).toLocaleDateString("fa-IR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+            </span>
+          </div>
+          <div className="flex justify-between border-b border-border/50 pb-2">
+            <span className="text-muted-foreground text-xs sm:text-sm">شیفت:</span>
+            <span className="font-semibold text-sm sm:text-base">{reservationInfo.shift === 'noon' ? 'ظهر' : 'شب'}</span>
+          </div>
+          <div className="flex justify-between border-b border-border/50 pb-2">
+            <span className="text-muted-foreground text-xs sm:text-sm">تعداد مهمانان:</span>
+            <span className="font-semibold text-sm sm:text-base">{faNum(reservationInfo.guests)} نفر</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground text-xs sm:text-sm">وضعیت رزرو:</span>
+            <span className="font-semibold text-primary text-sm sm:text-base">{
+              reservationInfo.status === 'pending' ? 'در انتظار بیعانه' :
+              reservationInfo.status === 'confirmed' ? 'تایید شده' : reservationInfo.status
+            }</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- نمایش فرم اصلی رزرو ----------
   return (
     <form onSubmit={submit} className="space-y-5 sm:space-y-7 animate-fade-up">
       <div>
@@ -255,24 +371,24 @@ function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | numb
 
       <Field label="نام و نام خانوادگی">
         <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
+          type="text" value={name} onChange={(e) => setName(e.target.value)} required
           className="w-full rounded-xl border border-border bg-background px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition min-h-[44px]"
         />
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
         <Field label="تاریخ مراسم">
-          <input
-            type="date"
-            min={today}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="w-full rounded-xl border border-border bg-background px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition min-h-[44px]"
-          />
+          <div className="flex gap-2 w-full" dir="ltr">
+            <select value={jYear} onChange={(e) => setJYear(Number(e.target.value))} className="w-1/3 rounded-xl border border-border bg-background px-2 py-2.5 sm:py-3 text-sm focus:border-primary outline-none">
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+            <select value={jMonth} onChange={(e) => setJMonth(Number(e.target.value))} className="w-1/3 rounded-xl border border-border bg-background px-2 py-2.5 sm:py-3 text-sm focus:border-primary outline-none">
+              {months.map(m => <option key={m} value={m}>{String(m).padStart(2, '0')}</option>)}
+            </select>
+            <select value={jDay} onChange={(e) => setJDay(Number(e.target.value))} className="w-1/3 rounded-xl border border-border bg-background px-2 py-2.5 sm:py-3 text-sm focus:border-primary outline-none">
+              {days.map(d => <option key={d} value={d}>{String(d).padStart(2, '0')}</option>)}
+            </select>
+          </div>
         </Field>
         <Field label="شیفت">
           <ToggleGroup
@@ -283,7 +399,11 @@ function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | numb
         </Field>
       </div>
 
-      {date && (
+      {isPastDate ? (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-destructive transition-all">
+          ✗ امکان رزرو تاریخ‌های گذشته وجود ندارد
+        </div>
+      ) : gregorianDate && (
         <div
           className={`rounded-xl border px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm transition-all
             ${checking ? "border-border bg-muted/40 text-muted-foreground" :
@@ -300,30 +420,26 @@ function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | numb
 
       <Field label={`تعداد مهمانان: ${faNum(guests)} نفر`}>
         <input
-          type="range" min={20} max={400} step={10}
-          value={guests}
+          type="range" min={200} max={1500} step={10} value={guests}
           onChange={(e) => setGuests(Number(e.target.value))}
           className="w-full accent-[oklch(0.76_0.13_85)]"
         />
         <div className="flex justify-between text-xs text-muted-foreground mt-1.5 sm:mt-2">
-          <span>{faNum(20)}</span><span>{faNum(400)}</span>
+          <span>{faNum(200)}</span><span>{faNum(1500)}</span>
         </div>
       </Field>
 
       <Field label="توضیحات (اختیاری)">
         <textarea
-          rows={3}
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="w-full rounded-xl border border-border bg-background px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition resize-none min-h-[96px]"
+          rows={3} value={notes} onChange={(e) => setNotes(e.target.value)}
+          className="w-full rounded-xl border border-border bg-background px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base focus:border-primary outline-none transition resize-none min-h-[96px]"
         />
       </Field>
 
       {error && <p className="text-xs sm:text-sm text-destructive">{error}</p>}
 
       <button
-        type="submit"
-        disabled={!canSubmit}
+        type="submit" disabled={!canSubmit}
         className="w-full rounded-xl gradient-gold py-3 sm:py-3.5 text-sm font-semibold text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-transform enabled:hover:scale-105 active:scale-95 min-h-[44px] sm:min-h-[48px]"
       >
         {loading ? "در حال ثبت رزرو…" : "ثبت رزرو"}
@@ -331,16 +447,6 @@ function FormStep({ phone, onDone }: { phone: string; onDone: (id: string | numb
     </form>
   );
 }
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="block text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">{label}</label>
-      {children}
-    </div>
-  );
-}
-
 function ToggleGroup({
   value, onChange, options,
 }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
@@ -358,6 +464,15 @@ function ToggleGroup({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">{label}</label>
+      {children}
     </div>
   );
 }

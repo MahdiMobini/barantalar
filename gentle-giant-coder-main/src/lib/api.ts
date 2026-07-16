@@ -42,10 +42,21 @@ export const api = {
 
   checkAvailability: async (date: string, shift: string) => {
     const res = await fetch(
-      `${BASE_URL}/reservations/check/?date=${date}&shift=${shift}`
+      `${BASE_URL}/reservations/check/?date=${date}&shift=${shift}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken() ?? ""}`,
+        },
+      }
     );
     if (!res.ok) throw new Error("خطا در بررسی وضعیت");
-    return res.json() as Promise<{ available: boolean }>;
+    return res.json() as Promise<{ 
+      available: boolean; 
+      already_reserved?: boolean;
+      reservation_info?: any; 
+    }>;
   },
 
   createReservation: async (data: {

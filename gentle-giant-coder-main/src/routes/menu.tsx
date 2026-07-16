@@ -40,22 +40,22 @@ function MenuPage() {
   // Read-only menu: no selection state required here.
 
   return (
-    <div dir="rtl" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+    <div dir="rtl" className="mx-auto max-w-full sm:max-w-7xl px-3 sm:px-4 md:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
       <div className="text-center max-w-2xl mx-auto">
-        <h1 className="mt-3 font-display text-5xl sm:text-6xl font-bold">منوی پذیرایی</h1>
-        <p className="mt-5 text-muted-foreground leading-8"></p>
+        <h1 className="mt-3 font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">منوی پذیرایی</h1>
+        <p className="mt-4 sm:mt-5 text-sm sm:text-base text-muted-foreground leading-6 sm:leading-8"></p>
       </div>
 
-      <section className="mt-12 space-y-6">
-        <div className="rounded-3xl border border-border/60 bg-card p-8">
-          <div className="mb-6 flex items-center gap-4">
+      <section className="mt-8 sm:mt-10 md:mt-12 space-y-6">
+        <div className="rounded-2xl sm:rounded-3xl border border-border/60 bg-card p-5 sm:p-8">
+          <div className="mb-5 sm:mb-6 flex items-center gap-3 sm:gap-4">
             <div>
               <p className="text-sm uppercase tracking-[0.24em] text-primary">منوی اصلی</p>
-              <h2 className="mt-3 text-3xl font-display font-semibold">منوی پذیرایی</h2>
+              <h2 className="mt-2 sm:mt-3 text-2xl sm:text-3xl font-display font-semibold">منوی پذیرایی</h2>
             </div>
             <span className="h-0.5 flex-1 rounded-full bg-primary/20" />
           </div>
-          <div className="space-y-5">
+          <div className="space-y-3 sm:space-y-4">
             {items == null ? (
               [0, 1, 2].map((i) => (
                 <Skeleton key={i} className="h-48 w-full rounded-3xl" />
@@ -65,12 +65,12 @@ function MenuPage() {
                 return (
                   <article
                     key={item.id}
-                    className={`rounded-2xl border border-border/60 bg-background/70 p-4 ${!item.is_available ? "opacity-50" : ""}`}
+                    className={`rounded-2xl border border-border/60 bg-background/70 p-4 sm:p-5 ${!item.is_available ? "opacity-50" : ""}`}
                   >
                     <div className="mb-2 flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-3 text-sm font-medium text-foreground">
-                          <span className="font-display text-xl font-semibold">{item.name}</span>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm font-medium text-foreground">
+                          <span className="font-display text-lg sm:text-xl font-semibold">{item.name}</span>
                           {!item.is_available && <Badge variant="outline">ناموجود</Badge>}
                         </div>
                         {item.description && (
@@ -79,7 +79,7 @@ function MenuPage() {
                       </div>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-sm">
                       {item.rice_options.map((option) => (
                         <div key={option.id} className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">{option.rice_type_display}</span>
@@ -95,16 +95,16 @@ function MenuPage() {
         </div>
       </section>
 
-      <section className="mt-12">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <section className="mt-10 sm:mt-12">
+        <div className="mb-5 sm:mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-primary">پکیج ویژه</p>
-            <h3 className="mt-2 text-3xl font-display font-semibold">پکیج‌های ویژه</h3>
+            <h3 className="mt-2 text-2xl sm:text-3xl font-display font-semibold">پکیج‌های ویژه</h3>
           </div>
           <span className="hidden sm:block h-0.5 w-36 rounded-full bg-primary/20" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {specials == null ? (
             [0, 1, 2].map((i) => <Skeleton key={i} className="h-44 w-full rounded-3xl" />)
           ) : (
@@ -128,15 +128,15 @@ function MenuPage() {
         </div>
       </section>
 
-      <section className="mt-12 rounded-3xl border border-border/60 bg-background/70 p-6">
-        <div className="mb-5 flex items-center justify-between gap-4">
+      <section className="mt-10 sm:mt-12 rounded-2xl sm:rounded-3xl border border-border/60 bg-background/70 p-5 sm:p-6">
+        <div className="mb-4 sm:mb-5 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-primary">اختیاری</p>
-            <h3 className="mt-2 text-2xl font-semibold">میوه و دسر سلف‌سرویس</h3>
+            <h3 className="mt-2 text-xl sm:text-2xl font-semibold">میوه و دسر سلف‌سرویس</h3>
           </div>
           <span className="hidden sm:block h-0.5 w-24 rounded-full bg-primary/20" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {selfs == null ? (
             [0, 1].map((i) => <Skeleton key={i} className="h-14 w-full rounded-3xl" />)
           ) : (

@@ -44,11 +44,51 @@ class CheckAvailabilityView(APIView):
     hall حذف شد چون تالار یکیه
     """
     def get(self, request):
+        auth_header = request.headers.get('Authorization', '')
+        print("AUTH HEADER:", auth_header[:50])  # اول ۵۰ کاراکتر
+
+        if not auth_header.startswith('Bearer '):
+            return Response({'error': 'احراز هویت الزامی است'}, status=401)
+
+        token_str = auth_header.split(' ')[1]
+        try:
+            token = AccessToken(token_str)
+            phone_number_from_token = token.get('phone_number')  # این رو بگیر
+            print("Phone number in token:", phone_number_from_token)  # دیباگ
+            token.get('phone_number')  # فقط چک میکنیم توکن معتبره
+        except (TokenError, InvalidToken):
+            return Response({'error': 'توکن نامعتبر است'}, status=401)
+        
+
         date = request.query_params.get('date')
         shift = request.query_params.get('shift')
-
         if not all([date, shift]):
             return Response({'error': 'date و shift الزامی هستند'}, status=400)
+        if not phone_number_from_token :
+            return Response({'eror' : 'شماره تماس وارد نشده است'})
+        
+
+        if phone_number_from_token:
+            existing_reservation = Reservation.objects.filter(
+                phone_number=phone_number_from_token
+            ).exclude(status='cancelled').first()
+
+            if existing_reservation:
+                # اگر رزرو داشت، دیتای رزرو قبلی رو برمی‌گردونیم
+                return Response({
+                    'available': False,
+                    'already_reserved': True,
+                    'message': 'شما از قبل یک رزرو فعال دارید.',
+                    'reservation_info': {
+                        'id': existing_reservation.id,
+                        'date': existing_reservation.date,
+                        'shift': existing_reservation.shift,
+                        'customer_name': existing_reservation.customer_name,
+                        'guests': existing_reservation.guests,
+                        'status': existing_reservation.status
+                    }
+                })
+
 
         exists = Reservation.objects.filter(
             date=date,
