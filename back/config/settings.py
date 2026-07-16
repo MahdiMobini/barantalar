@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from decouple import config, Csv
 import os
+from decouple import Config, RepositoryEnv # این دو خط را اضافه کن
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+ENV_FILE_PATH = BASE_DIR.parent / '.env' # اضافه کردن یک .parent دیگر برای رفتن به پوشه talar
+# ساخت یک شیء config که فایل .env در روت را هدف قرار می‌دهد
+config = Config(RepositoryEnv(ENV_FILE_PATH))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
